@@ -17,9 +17,10 @@ Overall, this repository is a valuable resource for businesses that want to harn
 
 ### Function App
 
-- Create a Logic App in Azure and add the 'HTTP Request' action.
-- Set the 'Method' field to 'POST' and add the URL of your function app in the 'URI' field.
-- Set up the environment variables for your Cognitive Services Anomaly Detector instance (ANOMALYENDPOINT and OCP_APIM_SUB).
+- Clone this repository to your local machine.
+- Set up your Azure account and create a Cognitive Services Anomaly Detector resource.
+- Create an Azure Function App, using Python (3.9+) and serverless hosting. Set region, monitoring, storage, and networking as you wish.
+- When your function is deployed, add ANOMALYENDPOINT and OCP_APIM_SUB (your anomaly detector endpoint and key) under application settings in the function app configuration.
 - Deploy the Python code to the Azure Function App.
 
 ### Logic App
