@@ -11,7 +11,7 @@ Overall, this repository is a valuable resource for businesses that want to harn
 ## Pre-Requisites
 
 - A Microsoft Azure account
-- A Cognitive Services Anomaly Detector resource
+- A [Cognitive Services Anomaly Detector resource](https://learn.microsoft.com/en-us/azure/cognitive-services/anomaly-detector/overview)
 
 ## Getting Started
 
