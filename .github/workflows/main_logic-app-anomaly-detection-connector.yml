@@ -8,6 +8,10 @@ on:
   push:
     branches:
       - main
+    paths-ignore:
+      - README.md
+      - .gitignore
+      - LICENSE
   workflow_dispatch:
 
 env:
