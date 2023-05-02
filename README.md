@@ -17,10 +17,13 @@ Overall, this repository is a valuable resource for businesses that want to harn
 
 ### Function App
 
-- Clone this repository to your local machine.
 - Set up your Azure account and create a Cognitive Services Anomaly Detector resource.
-- Create an Azure Function App, using Python (3.9+) and serverless hosting. Set region, monitoring, storage, and networking as you wish.
-- When your function is deployed, add ANOMALYENDPOINT and OCP_APIM_SUB (your anomaly detector endpoint and key) under application settings in the function app configuration.
+- Create an Azure Function App, using Python (3.9+) and serverless hosting. Set region, monitoring, storage, and networking as you wish (see [Best practices for Azure Functions](https://learn.microsoft.com/en-us/azure/azure-functions/functions-best-practices))
+- When your function is deployed, go to under application settings in the function app configuration and add
+  - `ANOMALYENDPOINT`: The endpoint URL for your Cognitive Services Anomaly Detector instance
+  - `OCP_APIM_SUB`: The subscription key for your Cognitive Services Anomaly Detector instance
+  - `AzureWebJobsFeatureFlags`: with the key `EnableWorkerIndexing` to enable V2 Python models.
+- Clone this repository to your local machine.
 - Deploy the Python code to the Azure Function App.
 
 ### Logic App
@@ -29,13 +32,6 @@ Overall, this repository is a valuable resource for businesses that want to harn
 - Set the 'Method' field to 'POST' and add the URL of your function app in the 'URI' field.
 - In the 'Body' field, add your CSV data of the format ("date";"value").
 - Test the anomaly detection process.
-
-## Configuration
-
-Before you can run the function app, you need to set the following environment variables:
-
-- ANOMALYENDPOINT: The endpoint URL for your Cognitive Services Anomaly Detector instance
-- OCP_APIM_SUB: The subscription key for your Cognitive Services Anomaly Detector instance
 
 ## Contributions
 
