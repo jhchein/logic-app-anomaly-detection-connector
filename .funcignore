@@ -7,3 +7,5 @@ local.settings.json
 test
 .venv
 *.csv
+__pycache__
+*.md
