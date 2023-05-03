@@ -17,10 +17,12 @@ Overall, this repository is a valuable resource for businesses that want to harn
 
 ## Getting Started
 
+- Create a Cognitive Services Anomaly Detector resource.
+- Fork this repository.
+- (optional) adjust the code to your needs. For example your data might have a different schema (we're assuming a ';' separated csv with two columns 'date' and 'value')
+
 ### Function App
 
-- Fork this repository and adjust the code to your needs.
-- Create a Cognitive Services Anomaly Detector resource.
 - Create an Azure Function App, using Python (3.9+) and serverless hosting. Set region, monitoring, storage, and networking as you wish (see [Best practices for Azure Functions](https://learn.microsoft.com/en-us/azure/azure-functions/functions-best-practices))
   - Set continous integration and choose your forked repository.
   - When your Function App is deployed, go to Configuration -> application settings in the function app and add
