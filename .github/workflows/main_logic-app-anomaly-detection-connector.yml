@@ -8,6 +8,7 @@ on:
   push:
     branches:
       - main
+      - develop
     paths-ignore:
       - README.md
       - .gitignore
@@ -68,7 +69,7 @@ jobs:
         id: deploy-to-function
         with:
           app-name: ${{ env.FUNCTION_APP_NAME }}
-          slot-name: 'Production'
+          slot-name: ${{ github.ref == 'refs/heads/main' && 'Production' || 'dev' }}
           package: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_5B51D0F9BC7546B584F619FA83CBAB0C }}
           scm-do-build-during-deployment: true
