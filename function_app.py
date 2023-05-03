@@ -9,10 +9,50 @@ import requests
 
 app = func.FunctionApp()
 
+# Make sure that the required environment variables are set
+if "ANOMALYENDPOINT" not in os.environ:
+    raise ValueError(
+        "ANOMALYENDPOINT environment variable is not set. This is the URL of the Anomaly Detector API."
+    )
+if "OCP_APIM_SUB" not in os.environ:
+    raise ValueError(
+        "OCP_APIM_SUB environment variable is not set. This is the subscription key for the Anomaly Detector API."
+    )
+if "AzureWebJobsFeatureFlags" not in os.environ:
+    raise ValueError(
+        "AzureWebJobsFeatureFlags environment variable is not set. The key should be set to `EnableWorkerIndexing` to enable V2 Python models."
+    )
+
 
 def detect_anomalies(
     df: pd.DataFrame, maxAnomalyRatio=0.25, sensitivity=95, granularity="monthly"
 ) -> Dict:
+    """Detect anomalies in a time series using the Anomaly Detector API.
+
+    Args:
+        df (pd.DataFrame): The time series data to analyze.
+        maxAnomalyRatio (float, optional): The maximum ratio of anomalies that can be detected. Defaults to 0.25.
+        sensitivity (int, optional): The sensitivity of the anomaly detection algorithm. Defaults to 95.
+        granularity (str, optional): The granularity of the time series data. Defaults to "monthly".
+
+    Returns:
+        Dict: The results of the anomaly detection.
+    """
+
+    # Check if granularity is valid
+    if granularity not in [
+        "secondly",
+        "minutely",
+        "hourly",
+        "daily",
+        "weekly",
+        "monthly",
+        "Yearly",
+    ]:
+        raise ValueError(
+            "Invalid granularity. Must be one of: secondly, minutely, hourly, daily, weekly, monthly, Yearly"
+        )
+
     anomaly_detection_url = os.environ["ANOMALYENDPOINT"]
     key = os.environ["OCP_APIM_SUB"]
     headers = {"Content-Type": "application/json", "Ocp-Apim-Subscription-Key": key}
