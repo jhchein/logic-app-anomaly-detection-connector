@@ -2,7 +2,7 @@
 # More GitHub Actions for Azure: https://github.com/Azure/actions
 # More info on Python, GitHub Actions, and Azure Functions: https://aka.ms/python-webapps-actions
 
-name: Build and deploy Python project to Azure Function App - logic-app-anomaly-detection-connector
+name: Build and deploy Python project to Azure Function App
 
 on:
   push:
@@ -17,6 +17,7 @@ on:
 env:
   AZURE_FUNCTIONAPP_PACKAGE_PATH: '.' # set this to the path to your web app project, defaults to the repository root
   PYTHON_VERSION: '3.9' # set this to the python version to use (supports 3.6, 3.7, 3.8)
+  FUNCTION_APP_NAME: 'logic-app-anomaly-detection-connector'
 
 jobs:
   build:
@@ -66,7 +67,7 @@ jobs:
         uses: Azure/functions-action@v1
         id: deploy-to-function
         with:
-          app-name: 'logic-app-anomaly-detection-connector'
+          app-name: ${{ env.FUNCTION_APP_NAME }}
           slot-name: 'Production'
           package: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_5B51D0F9BC7546B584F619FA83CBAB0C }}
