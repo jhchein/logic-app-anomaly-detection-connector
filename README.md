@@ -22,7 +22,7 @@ Overall, this repository is a valuable resource for businesses that want to harn
 - Fork this repository and adjust the code to your needs.
 - Create a Cognitive Services Anomaly Detector resource.
 - Create an Azure Function App, using Python (3.9+) and serverless hosting. Set region, monitoring, storage, and networking as you wish (see [Best practices for Azure Functions](https://learn.microsoft.com/en-us/azure/azure-functions/functions-best-practices))
-  - Set continous integration from your forked repository.
+  - Set continous integration and choose your forked repository.
   - When your Function App is deployed, go to Configuration -> application settings in the function app and add
     - `ANOMALYENDPOINT`: The endpoint URL for your Cognitive Services Anomaly Detector instance
     - `OCP_APIM_SUB`: The subscription key for your Cognitive Services Anomaly Detector instance
