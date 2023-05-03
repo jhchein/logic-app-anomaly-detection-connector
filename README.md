@@ -1,6 +1,8 @@
 # Anomaly Detection with Azure Logic Apps and Python
 
-This repository contains Python code for an anomaly detection process that can be integrated with Azure Logic Apps. The process involves parsing a CSV file from any source (such as Sharepoint), processing the data using a Function App, and returning the aggregated data.
+(_Created by GPT_)
+
+This repository contains Python code for an anomaly detection process that can be integrated with Azure Logic Apps. The process involves parsing a CSV file from any source supported by your Logic App (such as Storage Accounts, Sharepoint or One Drive), processing the data using a Function App, and returning the aggregated data.
 
 The anomaly detection process is designed to help businesses identify unusual patterns or trends in their data that may be indicative of potential issues or opportunities. By detecting anomalies in their data, businesses can take proactive measures to mitigate risks or capitalize on opportunities.
 
@@ -17,21 +19,29 @@ Overall, this repository is a valuable resource for businesses that want to harn
 
 ### Function App
 
+- Fork this repository and adjust the code to your needs.
 - Set up your Azure account and create a Cognitive Services Anomaly Detector resource.
 - Create an Azure Function App, using Python (3.9+) and serverless hosting. Set region, monitoring, storage, and networking as you wish (see [Best practices for Azure Functions](https://learn.microsoft.com/en-us/azure/azure-functions/functions-best-practices))
-- When your function is deployed, go to under application settings in the function app configuration and add
+- Set continous integration from your forked repository.
+- When your Function App is deployed, go to Configuration -> application settings in the function app and add
   - `ANOMALYENDPOINT`: The endpoint URL for your Cognitive Services Anomaly Detector instance
   - `OCP_APIM_SUB`: The subscription key for your Cognitive Services Anomaly Detector instance
   - `AzureWebJobsFeatureFlags`: with the key `EnableWorkerIndexing` to enable V2 Python models.
-- Clone this repository to your local machine.
-- Deploy the Python code to the Azure Function App.
+- Restart the Function to apply the changes.
+- In the Function App go to 'Functions' and select the AnomalyDetector Function. Go to 'Function Keys' and copy the default Function Key.
 
 ### Logic App
 
-- Create a Logic App in Azure and add the 'HTTP Request' action.
+- Create a Logic App in Azure, that parses a CSV file.
+- Add the 'HTTP Request' action.
 - Set the 'Method' field to 'POST' and add the URL of your function app in the 'URI' field.
-- In the 'Body' field, add your CSV data of the format ("date";"value").
+- In the Header set the key `x-functions-key` with your Function Key as the value.
+- In the 'Body' field, add the CSV data from the previous step ("date";"value").
 - Test the anomaly detection process.
+
+### Protecting your Function
+
+To fully secure your function endpoints in production, you should consider implementing one of the [following function app-level security options](https://learn.microsoft.com/en-us/azure/azure-functions/functions-bindings-http-webhook-trigger?pivots=programming-language-python&tabs=python-v2%2Cin-process%2Cfunctionsv2#secure-an-http-endpoint-in-production). When using one of these function app-level security methods, you should set the HTTP-triggered function authorization level to `anonymous`.
 
 ## Contributions
 
