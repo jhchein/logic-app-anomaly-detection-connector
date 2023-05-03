@@ -9,3 +9,4 @@ test
 *.csv
 __pycache__
 *.md
+LICENSE
