@@ -20,15 +20,15 @@ Overall, this repository is a valuable resource for businesses that want to harn
 ### Function App
 
 - Fork this repository and adjust the code to your needs.
-- Set up your Azure account and create a Cognitive Services Anomaly Detector resource.
+- Create a Cognitive Services Anomaly Detector resource.
 - Create an Azure Function App, using Python (3.9+) and serverless hosting. Set region, monitoring, storage, and networking as you wish (see [Best practices for Azure Functions](https://learn.microsoft.com/en-us/azure/azure-functions/functions-best-practices))
-- Set continous integration from your forked repository.
-- When your Function App is deployed, go to Configuration -> application settings in the function app and add
-  - `ANOMALYENDPOINT`: The endpoint URL for your Cognitive Services Anomaly Detector instance
-  - `OCP_APIM_SUB`: The subscription key for your Cognitive Services Anomaly Detector instance
-  - `AzureWebJobsFeatureFlags`: with the key `EnableWorkerIndexing` to enable V2 Python models.
-- Restart the Function to apply the changes.
-- In the Function App go to 'Functions' and select the AnomalyDetector Function. Go to 'Function Keys' and copy the default Function Key.
+  - Set continous integration and choose your forked repository.
+  - When your Function App is deployed, go to Configuration -> application settings in the function app and add
+    - `ANOMALYENDPOINT`: The endpoint URL for your Cognitive Services Anomaly Detector instance
+    - `OCP_APIM_SUB`: The subscription key for your Cognitive Services Anomaly Detector instance
+    - `AzureWebJobsFeatureFlags`: with the key `EnableWorkerIndexing` to enable V2 Python models.
+- Change the `FUNCTION_APP_NAME` in `.github\workflows\main_logic-app-anomaly-detection-connector.yml` to your function app name.
+- In the Function App go to 'Functions' and select the 'AnomalyDetector' function. Under 'Function Keys' copy the default Function Key.
 
 ### Logic App
 
