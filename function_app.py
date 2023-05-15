@@ -106,7 +106,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
 
     # Convert the enriched data to a CSV file and return it as the response body
     response = func.HttpResponse(
-        enriched_df.to_csv(index=False, sep=";"),
+        enriched_df.to_csv(index=False, sep=","),
         mimetype="text/csv",
         status_code=200,
     )
