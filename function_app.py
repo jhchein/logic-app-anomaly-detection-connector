@@ -91,7 +91,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
     logging.info(req_body_str)
 
     # Parse the string as a Pandas DataFrame
-    df = pd.read_csv(io.StringIO(req_body_str), sep=";")
+    df = pd.read_csv(io.StringIO(req_body_str), sep=",")
 
     # Convert the date column to a datetime object
     # df["date"] = pd.to_datetime(df["date"], format="%d.%m.%Y")
@@ -106,7 +106,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
 
     # Convert the enriched data to a CSV file and return it as the response body
     response = func.HttpResponse(
-        enriched_df.to_csv(index=False, sep=";"),
+        enriched_df.to_csv(index=False, sep=","),
         mimetype="text/csv",
         status_code=200,
     )
