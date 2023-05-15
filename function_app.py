@@ -59,8 +59,8 @@ def detect_anomalies(
 
     data = {
         "series": [
-            {"timestamp": str(date), "value": float(value)}
-            for date, value in zip(df["date"], df["value"])
+            {"timestamp": str(month), "value": float(value)}
+            for month, value in zip(df["month"], df["value"])
         ],
         "maxAnomalyRatio": maxAnomalyRatio,
         "sensitivity": sensitivity,
@@ -94,7 +94,8 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
     df = pd.read_csv(io.StringIO(req_body_str), sep=";")
 
     # Convert the date column to a datetime object
-    df["date"] = pd.to_datetime(df["date"], format="%d.%m.%Y")
+    # df["date"] = pd.to_datetime(df["date"], format="%d.%m.%Y")
+    df["month"] = pd.to_datetime(df["month"], format="%b-%y")
 
     # Send data to the anomaly detection service and receive the results
     results = detect_anomalies(df)
