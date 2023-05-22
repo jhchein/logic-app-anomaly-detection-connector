@@ -78,7 +78,7 @@ def detect_anomalies(
     return response.json()
 
 
-@app.function_name(name="AnomalyDetection")
+@app.function_name(name="AnomalyDetection2")
 @app.route(route="anomalydetection", auth_level=func.AuthLevel.ANONYMOUS)
 def main(req: func.HttpRequest) -> func.HttpResponse:
     logging.info("Python HTTP trigger function processed a request.")
