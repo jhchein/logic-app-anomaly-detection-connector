@@ -10,6 +10,8 @@ import json
 
 app = func.FunctionApp()
 
+import logging
+
 def detect_anomalies(df: pd.DataFrame, max_anomaly_ratio=0.25, sensitivity=95, granularity="monthly") -> Dict:
     """Detect anomalies in a time series using the Anomaly Detector API.
 
@@ -37,12 +39,16 @@ def detect_anomalies(df: pd.DataFrame, max_anomaly_ratio=0.25, sensitivity=95, g
         "granularity": granularity,
     }
 
+    logging.info(f"Sending request to Anomaly Detector API with data: {data}")
+
     response = requests.post(
         anomaly_detection_url + "anomalydetector/v1.0/timeseries/entire/detect",
         headers=headers,
         json=data,
     )
     response.raise_for_status()
+
+    logging.info(f"Received response from Anomaly Detector API: {response.json()}")
 
     return response.json()
 
@@ -67,6 +73,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
     try:
         time_series_df = pd.read_csv(io.StringIO(req_body_str), sep=",")
     except pd.errors.EmptyDataError:
+        logging.error("The request body is empty.")
         return func.HttpResponse(
             "The request body is empty.", status_code=400, mimetype="text/plain"
         )
@@ -100,5 +107,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         mimetype="application/json",
         status_code=200,
     )
+
+    logging.info(f"Anomaly detection results: {response_body}")
 
     return response
