@@ -1,5 +1,4 @@
 import io
-import logging
 import os
 from typing import Dict
 
@@ -7,31 +6,18 @@ import azure.functions as func
 import pandas as pd
 import requests
 
+import json
+
 app = func.FunctionApp()
 
-# Make sure that the required environment variables are set
-if "ANOMALYENDPOINT" not in os.environ:
-    raise ValueError(
-        "ANOMALYENDPOINT environment variable is not set. This is the URL of the Anomaly Detector API."
-    )
-if "OCP_APIM_SUB" not in os.environ:
-    raise ValueError(
-        "OCP_APIM_SUB environment variable is not set. This is the subscription key for the Anomaly Detector API."
-    )
-if "AzureWebJobsFeatureFlags" not in os.environ:
-    raise ValueError(
-        "AzureWebJobsFeatureFlags environment variable is not set. The key should be set to `EnableWorkerIndexing` to enable V2 Python models."
-    )
+import logging
 
-
-def detect_anomalies(
-    df: pd.DataFrame, maxAnomalyRatio=0.25, sensitivity=95, granularity="monthly"
-) -> Dict:
+def detect_anomalies(df: pd.DataFrame, max_anomaly_ratio=0.25, sensitivity=95, granularity="monthly") -> Dict:
     """Detect anomalies in a time series using the Anomaly Detector API.
 
     Args:
         df (pd.DataFrame): The time series data to analyze.
-        maxAnomalyRatio (float, optional): The maximum ratio of anomalies that can be detected. Defaults to 0.25.
+        max_anomaly_ratio (float, optional): The maximum ratio of anomalies that can be detected. Defaults to 0.25.
         sensitivity (int, optional): The sensitivity of the anomaly detection algorithm. Defaults to 95.
         granularity (str, optional): The granularity of the time series data. Defaults to "monthly".
 
@@ -39,34 +25,21 @@ def detect_anomalies(
         Dict: The results of the anomaly detection.
     """
 
-    # Check if granularity is valid
-    if granularity not in [
-        "secondly",
-        "minutely",
-        "hourly",
-        "daily",
-        "weekly",
-        "monthly",
-        "Yearly",
-    ]:
-        raise ValueError(
-            "Invalid granularity. Must be one of: secondly, minutely, hourly, daily, weekly, monthly, Yearly"
-        )
-
     anomaly_detection_url = os.environ["ANOMALYENDPOINT"]
-    key = os.environ["OCP_APIM_SUB"]
-    headers = {"Content-Type": "application/json", "Ocp-Apim-Subscription-Key": key}
+    api_key = os.environ["OCP_APIM_SUB"]
+    headers = {"Content-Type": "application/json", "Ocp-Apim-Subscription-Key": api_key}
 
     data = {
         "series": [
             {"timestamp": str(month), "value": float(value)}
-            for month, value in zip(df["month"], df["value"])
+            for month, value in zip(df["month"], df["value"]) # type: ignore
         ],
-        "maxAnomalyRatio": maxAnomalyRatio,
+        "maxAnomalyRatio": max_anomaly_ratio,
         "sensitivity": sensitivity,
         "granularity": granularity,
     }
-    logging.info(data)
+
+    logging.info(f"Sending request to Anomaly Detector API with data: {data}")
 
     response = requests.post(
         anomaly_detection_url + "anomalydetector/v1.0/timeseries/entire/detect",
@@ -75,40 +48,66 @@ def detect_anomalies(
     )
     response.raise_for_status()
 
+    logging.info(f"Received response from Anomaly Detector API: {response.json()}")
+
     return response.json()
 
 
-@app.function_name(name="AnomalyDetection")
+@app.function_name(name="AnomalyDetection2")
 @app.route(route="anomalydetection", auth_level=func.AuthLevel.ANONYMOUS)
 def main(req: func.HttpRequest) -> func.HttpResponse:
-    logging.info("Python HTTP trigger function processed a request.")
+    """HTTP trigger function that detects anomalies in a time series using the Anomaly Detector API.
 
-    # Get the body of the request as bytes
+    Args:
+        req (func.HttpRequest): The HTTP request.
+
+    Returns:
+        func.HttpResponse: The HTTP response.
+    """
+
+    # Get the request body
     req_body = req.get_body()
-
-    # Convert the binary body to a string
     req_body_str = req_body.decode("utf-8")
-    logging.info(req_body_str)
 
-    # Parse the string as a Pandas DataFrame
-    df = pd.read_csv(io.StringIO(req_body_str), sep=",")
+    # Parse the CSV data into a pandas DataFrame
+    try:
+        time_series_df = pd.read_csv(io.StringIO(req_body_str), sep=",")
+    except pd.errors.EmptyDataError:
+        logging.error("The request body is empty.")
+        return func.HttpResponse(
+            "The request body is empty.", status_code=400, mimetype="text/plain"
+        )
 
-    # Convert the date column to a datetime object
-    # df["date"] = pd.to_datetime(df["date"], format="%d.%m.%Y")
-    df["month"] = pd.to_datetime(df["month"], format="%b-%y")
+    # Convert the "month" column to a datetime object
+    time_series_df["month"] = pd.to_datetime(time_series_df["month"], format="%b-%y")
 
-    # Send data to the anomaly detection service and receive the results
-    results = detect_anomalies(df)
+    # Detect anomalies in the time series data
+    anomaly_results = detect_anomalies(time_series_df)
 
-    # Parse the results and merge them with the original data
-    anomaly_df = pd.DataFrame(results)
-    enriched_df = df.join(anomaly_df)
+    # Join the anomaly results with the original time series data
+    anomaly_df = pd.DataFrame(anomaly_results)
+    enriched_df = time_series_df.join(anomaly_df)
 
-    # Convert the enriched data to a CSV file and return it as the response body
+    # Check if any anomalies were detected
+    anomaly_detected = any(enriched_df["isAnomaly"])
+
+    # Convert the "month" column back to a string format
+    enriched_df["month"] = pd.to_datetime(time_series_df["month"], format="%b-%y").dt.strftime("%b-%y")
+
+    # Get the months with anomalies
+    anomaly_months = enriched_df.loc[enriched_df["isAnomaly"], "month"].tolist()
+
+    # Convert the enriched DataFrame to a CSV string
+    csv_string = enriched_df.to_csv(index=False)
+
+    # Return the response as a JSON object with the anomaly detection results and the enriched data as a CSV string
+    response_body = {"anomaly_detected": anomaly_detected, "anomaly_months": anomaly_months, "enriched_data": csv_string}
     response = func.HttpResponse(
-        enriched_df.to_csv(index=False, sep=","),
-        mimetype="text/csv",
+        json.dumps(response_body),
+        mimetype="application/json",
         status_code=200,
     )
+
+    logging.info(f"Anomaly detection results: {response_body}")
 
     return response
