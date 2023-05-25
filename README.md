@@ -42,7 +42,7 @@ GitHub Actions is a powerful automation tool that allows you to automate tasks, 
 For more information about deploying with GitHub Actions, see [Deploying with GitHub Actions](https://docs.github.com/en/actions/deployment/about-deployments/deploying-with-github-actions) .
 
 ### Call the Connector from your Logic App
-1. Create a Logic App in Azure that can parse a CSV file. You can use the suiting connector (e.g. OneDrive, SharePoint) for this purpose.
+1. Create a Logic App in Azure that can parse a CSV file. You can use the suiting connector (e.g. OneDrive, SharePoint) for this purpose. You could also check the example `logic_app_example.json`.
 2. Add the 'HTTP Request' action.
 3. Set the 'Method' field to 'POST' and enter the URL of your function app in the 'URI' field. You can find the URL of your function app in the Azure portal.
 4. In the Header section, add a key named `x-functions-key` and set its value to your Function Key. You can find your Function Key in the Azure portal as well.
