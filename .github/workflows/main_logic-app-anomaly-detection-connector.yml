@@ -75,6 +75,11 @@ jobs:
           name: python-app
           path: .
 
+      - name: Login to Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
       - name: Set environment variables
         run: |
           az functionapp config appsettings set --name ${{ env.FUNCTION_APP_NAME }} --resource-group ${{env.RESOURCE_GROUP}} --settings ANOMALYENDPOINT=${{ secrets.ANOMALYENDPOINT }} OCP_APIM_SUB=${{ secrets.OCP_APIM_SUB }} AzureWebJobsFeatureFlags=EnableWorkerIndexing
