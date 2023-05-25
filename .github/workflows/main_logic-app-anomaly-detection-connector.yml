@@ -46,7 +46,10 @@ jobs:
       # Optional: Add step to run tests here
       - name: Install pytest
         run: pip install pytest
-        
+
+      - name: Set PYTHONPATH
+        run: export PYTHONPATH="${PYTHONPATH}:${GITHUB_WORKSPACE}"
+
       - name: Run pytest
         run: pytest tests/test_function_app.py
 
