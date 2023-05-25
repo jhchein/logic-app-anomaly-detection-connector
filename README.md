@@ -34,7 +34,7 @@ Here's how to get started with using this code:
 10. Add the 'HTTP Request' action.
 11. Set the 'Method' field to 'POST' and add the URL of your function app in the 'URI' field.
 12. In the Header, set the key `x-functions-key` with your Function Key as the value.
-13. In the 'Body' field, add the CSV data from the previous step ("date";"value").
+13. In the 'Body' field, add the CSV data from the previous step ("month";"value").
 14. Test the anomaly detection process.
 
 ## Protecting Your Function
