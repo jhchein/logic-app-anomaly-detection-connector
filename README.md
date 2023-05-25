@@ -14,7 +14,7 @@ Before using this code, you'll need the following:
 
 - A GitHub Account
 - A Microsoft Azure Account, a subscription and contributor rights to 
-create resource
+create resources
 
 
 ## Getting Started
@@ -22,6 +22,8 @@ create resource
 Here's how to get started with using this code.
 
 ### Setting up the Azure Function
+The Azure Function is our connector between the Logic App and the Anomaly Detection Cognitive Service. Azure Functions is a serverless computing service that allows us to run code without managing any infrastructure. We only pay for the executions of our function, not for idle time. The Azure Function supports different languages, such as C#, Java, Python, and JavaScript.
+
 1. Create a Cognitive Services Anomaly Detector resource.
 2. Create an Azure Function App with Python (3.9+) and serverless hosting. You don't need CI/CD, we will do this manually. You can choose region, monitoring, storage, and networking as you like, following the [best practices for Azure Functions](https://learn.microsoft.com/en-us/azure/azure-functions/functions-best-practices).
 3. Go to your Function App `Configuration` > `Application settings` in the function app and add:
