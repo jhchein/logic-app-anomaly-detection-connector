@@ -1,0 +1,146 @@
+{
+    "definition": {
+        "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+        "actions": {
+            "Condition": {
+                "actions": {
+                    "Send_an_email_(V2)": {
+                        "inputs": {
+                            "body": {
+                                "Body": "<p>Hi there.<br>\n<br>\nWe detected an anomaly in the following months: @{body('HTTP')['anomaly_months']}<br>\n<br>\nFor more information check the power BI report.<br>\n<br>\nCheers,<br>\nYour AD Team</p>",
+                                "Importance": "Low",
+                                "Subject": "Anomaly Detected",
+                                "To": "<your email address here>"
+                            },
+                            "host": {
+                                "connection": {
+                                    "name": "@parameters('$connections')['office365']['connectionId']"
+                                }
+                            },
+                            "method": "post",
+                            "path": "/v2/Mail"
+                        },
+                        "runAfter": {},
+                        "type": "ApiConnection"
+                    }
+                },
+                "expression": {
+                    "and": [
+                        {
+                            "equals": [
+                                "@body('HTTP')['anomaly_detected']",
+                                true
+                            ]
+                        }
+                    ]
+                },
+                "runAfter": {
+                    "HTTP": [
+                        "Succeeded"
+                    ]
+                },
+                "type": "If"
+            },
+            "Create_file": {
+                "inputs": {
+                    "body": "@body('HTTP')['enriched_data']",
+                    "host": {
+                        "connection": {
+                            "name": "@parameters('$connections')['onedriveforbusiness']['connectionId']"
+                        }
+                    },
+                    "method": "post",
+                    "path": "<your path here>",
+                    "queries": {
+                        "folderPath": "<your folder path here>",
+                        "name": "<your file name here>"
+                    }
+                },
+                "runAfter": {
+                    "HTTP": [
+                        "Succeeded"
+                    ]
+                },
+                "type": "ApiConnection"
+            },
+            "Get_file_content": {
+                "inputs": {
+                    "host": {
+                        "connection": {
+                            "name": "@parameters('$connections')['onedriveforbusiness']['connectionId']"
+                        }
+                    },
+                    "method": "get",
+                    "path": "<your path here>",
+                    "queries": {
+                        "inferContentType": true
+                    }
+                },
+                "metadata": {
+                    "<some_UUID>":"location/of/your/file.csv"
+                },
+                "runAfter": {},
+                "trackedProperties": {},
+                "type": "ApiConnection"
+            },
+            "HTTP": {
+                "inputs": {
+                    "body": "@body('Get_file_content')",
+                    "headers": {
+                        "x-functions-key": "<your function key here>"
+                    },
+                    "method": "POST",
+                    "uri": "https://<your_function_endpoint>.azurewebsites.net/api/<your_function_name>"
+                },
+                "runAfter": {
+                    "Get_file_content": [
+                        "Succeeded"
+                    ]
+                },
+                "trackedProperties": {},
+                "type": "Http"
+            }
+        },
+        "contentVersion": "1.0.0.0",
+        "outputs": {},
+        "parameters": {
+            "$connections": {
+                "defaultValue": {},
+                "type": "Object"
+            }
+        },
+        "triggers": {
+            "Recurrence": {
+                "evaluatedRecurrence": {
+                    "frequency": "Month",
+                    "interval": 1,
+                    "startTime": "2023-04-27T07:00:00Z",
+                    "timeZone": "W. Europe Standard Time"
+                },
+                "recurrence": {
+                    "frequency": "Month",
+                    "interval": 1,
+                    "startTime": "2023-04-27T07:00:00Z",
+                    "timeZone": "W. Europe Standard Time"
+                },
+                "type": "Recurrence"
+            }
+        }
+    },
+    "parameters": {
+        "$connections": {
+            "value": {
+                "office365": {
+                    "connectionId": "/subscriptions/<your subscription id>/resourceGroups/<your resource group>/providers/Microsoft.Web/connections/office365",
+                    "connectionName": "office365",
+                    "id": "/subscriptions/<your subscription id>/providers/Microsoft.Web/locations/westeurope/managedApis/office365"
+                },
+                "onedriveforbusiness": {
+                    "connectionId": "/subscriptions/<your subscription id>/resourceGroups/<your resource group>/providers/Microsoft.Web/connections/onedriveforbusiness",
+                    "connectionName": "onedriveforbusiness",
+                    "id": "/subscriptions/<your subscription id>/providers/Microsoft.Web/locations/westeurope/managedApis/onedriveforbusiness"
+                }
+            }
+        }
+    }
+}
