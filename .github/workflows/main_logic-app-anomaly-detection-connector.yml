@@ -77,7 +77,7 @@ jobs:
 
       - name: Set environment variables
         run: |
-          az functionapp config appsettings set --name ${{ env.FUNCTION_APP_NAME }} --resource-group <resource-group-name> --settings ANOMALYENDPOINT=${{ secrets.ANOMALYENDPOINT }} OCP_APIM_SUB=${{ secrets.OCP_APIM_SUB }} AzureWebJobsFeatureFlags=EnableWorkerIndexing
+          az functionapp config appsettings set --name ${{ env.FUNCTION_APP_NAME }} --resource-group ${{env.RESOURCE_GROUP}} --settings ANOMALYENDPOINT=${{ secrets.ANOMALYENDPOINT }} OCP_APIM_SUB=${{ secrets.OCP_APIM_SUB }} AzureWebJobsFeatureFlags=EnableWorkerIndexing
   
       - name: 'Deploy to Azure Functions'
         uses: Azure/functions-action@v1
