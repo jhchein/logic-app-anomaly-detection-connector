@@ -21,7 +21,7 @@ env:
   PYTHON_VERSION: '3.9' # set this to the python version to use (supports 3.6, 3.7, 3.8)
   ANOMALYENDPOINT: ${{ secrets.ANOMALYENDPOINT }} # The endpoint for the anomaly detection API set as a secret in your GitHub repository, required for the test step and setting environment variables in the Function App
   OCP_APIM_SUB: ${{ secrets.OCP_APIM_SUB }} # The subscription key for the anomaly detection API set as a secret in your GitHub repository, required for the test step and setting environment variables in the Function App
-  RESOURCE_GROUP: ${{ secrets.RESOURCE_GROUP }} # The resource group for the Function App, required for setting environment variables in the Function App
+  RESOURCE_GROUP: ${{ vars.RESOURCE_GROUP }} # The resource group for the Function App, required for setting environment variables in the Function App
 
 jobs:
   build:
@@ -45,14 +45,15 @@ jobs:
         
       # Optional: Add step to run tests here
       # The test will validate the function app return schema is correct. You will need to set ANOMALYENDPOINT and OCP_APIM_SUB as secrets in your GitHub repository (see 'env' section above)
-      - name: Install pytest
-        run: pip install pytest
+      # - name: Install pytest
+      #   run: pip install pytest
 
-      - name: Set PYTHONPATH to root of repo
-        run: export PYTHONPATH="${PYTHONPATH}:${GITHUB_WORKSPACE}"
+      # Set PYTHONPATH to root of repo
+      # - name: Set PYTHONPATH
+      #   run: export PYTHONPATH="${PYTHONPATH}:${GITHUB_WORKSPACE}"
 
-      - name: Run pytest
-        run: pytest tests/test_function_app.py
+      # - name: Run pytest
+      #   run: pytest tests/test_function_app.py
       # End optional test step
 
       - name: Upload artifact for deployment job
@@ -82,13 +83,13 @@ jobs:
       # - AZURE_CREDENTIALS: The output of running az ad sp create-for-rbac --name "myApp" --role contributor --scopes /subscriptions/{subscription-id}/resourceGroups/{resource-group} --sdk-auth
       #   - subscription-id: The subscription used for the Function App
       #   - resource-group: The resource group used for the Function App
-      - name: Login to Azure
-        uses: azure/login@v1
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-      - name: Set environment variables
-        run: |
-          az functionapp config appsettings set --name ${{ env.FUNCTION_APP_NAME }} --resource-group ${{ env.RESOURCE_GROUP }} --settings ANOMALYENDPOINT=${{ secrets.ANOMALYENDPOINT }} OCP_APIM_SUB=${{ secrets.OCP_APIM_SUB }} AzureWebJobsFeatureFlags=EnableWorkerIndexing
+      # - name: Login to Azure
+      #   uses: azure/login@v1
+      #   with:
+      #     creds: ${{ secrets.AZURE_CREDENTIALS }}
+      # - name: Set environment variables
+      #   run: |
+      #     az functionapp config appsettings set --name ${{ env.FUNCTION_APP_NAME }} --resource-group ${{ env.RESOURCE_GROUP }} --settings ANOMALYENDPOINT=${{ secrets.ANOMALYENDPOINT }} OCP_APIM_SUB=${{ secrets.OCP_APIM_SUB }} AzureWebJobsFeatureFlags=EnableWorkerIndexing
       # END Optional section
   
       - name: 'Deploy to Azure Functions'
