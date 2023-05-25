@@ -53,7 +53,7 @@ jobs:
       #   run: export PYTHONPATH="${PYTHONPATH}:${GITHUB_WORKSPACE}"
 
       # - name: Run pytest
-      #   run: pytest tests/test_function_app.py
+      #   run: pytest
       # End optional test step
 
       - name: Upload artifact for deployment job
