@@ -16,12 +16,12 @@ on:
   workflow_dispatch:
 
 env:
+  FUNCTION_APP_NAME: 'logic-app-anomaly-detection-connector' # set this to your application's name
   AZURE_FUNCTIONAPP_PACKAGE_PATH: '.' # set this to the path to your web app project, defaults to the repository root
   PYTHON_VERSION: '3.9' # set this to the python version to use (supports 3.6, 3.7, 3.8)
-  FUNCTION_APP_NAME: 'logic-app-anomaly-detection-connector'
-  ANOMALYENDPOINT: ${{ secrets.ANOMALYENDPOINT }}
-  OCP_APIM_SUB: ${{ secrets.OCP_APIM_SUB }}
-  RESOURCE_GROUP: ${{ vars.RESOURCE_GROUP }}
+  ANOMALYENDPOINT: ${{ secrets.ANOMALYENDPOINT }} # The endpoint for the anomaly detection API set as a secret in your GitHub repository, required for the test step and setting environment variables in the Function App
+  OCP_APIM_SUB: ${{ secrets.OCP_APIM_SUB }} # The subscription key for the anomaly detection API set as a secret in your GitHub repository, required for the test step and setting environment variables in the Function App
+  RESOURCE_GROUP: ${{ secrets.RESOURCE_GROUP }} # The resource group for the Function App, required for setting environment variables in the Function App
 
 jobs:
   build:
@@ -44,14 +44,16 @@ jobs:
         run: pip install -r requirements.txt
         
       # Optional: Add step to run tests here
+      # The test will validate the function app return schema is correct. You will need to set ANOMALYENDPOINT and OCP_APIM_SUB as secrets in your GitHub repository (see 'env' section above)
       - name: Install pytest
         run: pip install pytest
 
-      - name: Set PYTHONPATH
+      - name: Set PYTHONPATH to root of repo
         run: export PYTHONPATH="${PYTHONPATH}:${GITHUB_WORKSPACE}"
 
       - name: Run pytest
         run: pytest tests/test_function_app.py
+      # End optional test step
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v2
@@ -75,14 +77,19 @@ jobs:
           name: python-app
           path: .
 
+      # Optional: Uncomment this section to automatically set environment variables in the Function App. 
+      # You will need to create a service principal with contributor role and set the following secrets in your GitHub repository:
+      # - AZURE_CREDENTIALS: The output of running az ad sp create-for-rbac --name "myApp" --role contributor --scopes /subscriptions/{subscription-id}/resourceGroups/{resource-group} --sdk-auth
+      #   - subscription-id: The subscription used for the Function App
+      #   - resource-group: The resource group used for the Function App
       - name: Login to Azure
         uses: azure/login@v1
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
-
       - name: Set environment variables
         run: |
-          az functionapp config appsettings set --name ${{ env.FUNCTION_APP_NAME }} --resource-group ${{env.RESOURCE_GROUP}} --settings ANOMALYENDPOINT=${{ secrets.ANOMALYENDPOINT }} OCP_APIM_SUB=${{ secrets.OCP_APIM_SUB }} AzureWebJobsFeatureFlags=EnableWorkerIndexing
+          az functionapp config appsettings set --name ${{ env.FUNCTION_APP_NAME }} --resource-group ${{ env.RESOURCE_GROUP }} --settings ANOMALYENDPOINT=${{ secrets.ANOMALYENDPOINT }} OCP_APIM_SUB=${{ secrets.OCP_APIM_SUB }} AzureWebJobsFeatureFlags=EnableWorkerIndexing
+      # END Optional section
   
       - name: 'Deploy to Azure Functions'
         uses: Azure/functions-action@v1
@@ -91,6 +98,7 @@ jobs:
           app-name: ${{ env.FUNCTION_APP_NAME }}
           slot-name: 'Production'
           package: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_5B51D0F9BC7546B584F619FA83CBAB0C }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_5B51D0F9BC7546B584F619FA83CBAB0C }} # You will need to set this secret in your GitHub repository. See https://github.com/Azure/functions-action#using-publish-profile-as-deployment-credential-recommended
           scm-do-build-during-deployment: true
           enable-oryx-build: true
+          respect-funcignore: true
