@@ -1,11 +1,13 @@
 import pandas as pd
 from function_app import detect_anomalies
-from dotenv import load_dotenv
 
 try:
+    from dotenv import load_dotenv
     load_dotenv()
 except FileNotFoundError:
     print("No .env file found. Assuming environment variables are already set.")
+except ImportError:
+    print("dotenv not installed. Assuming environment variables are already set.")
 
 def test_detect_anomalies():
     # Create a test DataFrame from the test.csv file

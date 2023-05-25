@@ -12,34 +12,58 @@ The anomaly detection process is designed to help businesses identify unusual pa
 
 Before using this code, you'll need the following:
 
-- A Microsoft Azure account
-- A [Cognitive Services Anomaly Detector resource](https://learn.microsoft.com/en-us/azure/cognitive-services/anomaly-detector/overview)
+- A GitHub Account
+- A Microsoft Azure Account, a subscription and contributor rights to 
+create resource
+
 
 ## Getting Started
 
-Here's how to get started with using this code:
+Here's how to get started with using this code.
 
+### Setting up the Azure Function
 1. Create a Cognitive Services Anomaly Detector resource.
-2. Fork this repository.
-3. Adjust the code to your needs, if necessary (e.g., if your data has a different schema).
-4. Create an Azure Function App using Python (3.9+) and serverless hosting. You can set the region, monitoring, storage, and networking as you wish, following the [best practices for Azure Functions](https://learn.microsoft.com/en-us/azure/azure-functions/functions-best-practices).
-5. Set continuous integration and choose your forked repository.
-6. After your Function App is deployed, go to Configuration -> application settings in the function app and add:
-   - `ANOMALYENDPOINT`: The endpoint URL for your Cognitive Services Anomaly Detector instance
-   - `OCP_APIM_SUB`: The subscription key for your Cognitive Services Anomaly Detector instance
+2. Create an Azure Function App with Python (3.9+) and serverless hosting. You don't need CI/CD, we will do this manually. You can choose region, monitoring, storage, and networking as you like, following the [best practices for Azure Functions](https://learn.microsoft.com/en-us/azure/azure-functions/functions-best-practices).
+3. Go to your Function App `Configuration` > `Application settings` in the function app and add:
+   - `ANOMALYENDPOINT`: The endpoint URL for your Cognitive Services Anomaly Detector instance from step 1.
+   - `OCP_APIM_SUB`: The subscription key for your Cognitive Services Anomaly Detector instance from step 1.
    - `AzureWebJobsFeatureFlags`: with the key `EnableWorkerIndexing` to enable V2 Python models.
-7. Change the FUNCTION_APP_NAME in `github\workflows\main_logic-app-anomaly-detection-connector.yml` to your function app name.
-8. In the Function App, go to 'Functions' and select the 'AnomalyDetector' function. Under 'Function Keys,' copy the default Function Key.
-9. Create a Logic App in Azure that parses a CSV file.
-10. Add the 'HTTP Request' action.
-11. Set the 'Method' field to 'POST' and add the URL of your function app in the 'URI' field.
-12. In the Header, set the key `x-functions-key` with your Function Key as the value.
-13. In the 'Body' field, add the CSV data from the previous step ("date";"value").
-14. Test the anomaly detection process.
 
-## Protecting Your Function
+### Using GitHub Actions for Deployment
+GitHub Actions is a powerful automation tool that allows you to automate tasks, such as building, testing and deploying code. We will use GitHub Actions to deploy your latest version of you Microsoft Function App to Azure.
 
+1. Fork this repository.
+2. *(Optional):* Adjust `function_app.py` to your needs. You might have a different schema or anomaly detection configuration.
+3. Edit the GitHub Workflow `github\workflows\main_logic-app-anomaly-detection-connector.yml` 
+   - set `FUNCTION_APP_NAME` to your function app name.
+   - We will need permissions to deploy the App to Azure. Therefore follow these steps to [set your Function Publish profile](https://github.com/Azure/functions-action#using-publish-profile-as-deployment-credential-recommended) as a GitHub secret and then adjust the `publish profile` in the 'Deploy to Azure Functions' step. 
+4. Run the GitHub Workflow. After your Function App is deployed, go to the Function App to 'Functions' and select the 'AnomalyDetector' (the name you gave it in `function_app.py`) function. Under 'Function Keys,' copy the default Function Key.
+
+For more information about deploying with GitHub Actions, see [Deploying with GitHub Actions](https://docs.github.com/en/actions/deployment/about-deployments/deploying-with-github-actions) .
+
+### Call the Connector from your Logic App
+1. Create a Logic App in Azure that can parse a CSV file. You can use the suiting connector (e.g. OneDrive, SharePoint) for this purpose. You could also check the example `logic_app_example.json`.
+2. Add the 'HTTP Request' action.
+3. Set the 'Method' field to 'POST' and enter the URL of your function app in the 'URI' field. You can find the URL of your function app in the Azure portal.
+4. In the Header section, add a key named `x-functions-key` and set its value to your Function Key. You can find your Function Key in the Azure portal as well.
+5. In the 'Body' field, paste the CSV data that you want to analyze. The comma serapated CSV data should have minimum two columns: "month" and "value". You can adjust the schema under `function_app.py`.
+6. Run your Logic App and check the output of the 'HTTP Request' action. It should return a JSON object with the anomaly detection results `enriched_data`, the `anomaly_months` when anomalies were detected, and the `anomaly_detected` boolean if anomalies were detected.
+
+## Best practices
+### Protect Your Function
 To fully secure your function endpoints in production, you should consider implementing one of the [following function app-level security options](https://learn.microsoft.com/en-us/azure/azure-functions/functions-bindings-http-webhook-trigger?pivots=programming-language-python&tabs=python-v2%2Cin-process%2Cfunctionsv2#secure-an-http-endpoint-in-production). When using one of these function app-level security methods, you should set the HTTP-triggered function authorization level to `anonymous`.
+
+If you only call the Function from a Logic App, go to the Function App `Networking` > `Inbound Traffic` > `Access restriction` and add a Allow rule with Type `Service Tag` and Service Tag `Logic Apps`.
+
+### Enable and add Automated Tests.
+1. Set `ANOMALYENDPOINT` and `OCP_APIM_SUB` (endpoint and key of your Anomaly Detector) as [repository secrets](https://github.com/Azure/actions-workflow-samples/blob/master/assets/create-secrets-for-GitHub-workflows.md) in your freshly forked repository.
+2. Edit the GitHub Workflow `github\workflows\main_logic-app-anomaly-detection-connector.yml` and under `jobs.build` uncomment the steps `install pytest`, `Set PYTHONPATH` and `Run pytest`
+3. Add more tests to `tests\test_function_app.py`.
+
+## Optional Steps
+If you want to avoid adding secrets manually, you can [create an Azure Service Principal](https://github.com/Azure/actions-workflow-samples/blob/master/assets/create-secrets-for-GitHub-workflows.md) and add AZURE_CRENDENTIALS as a repository secret. 
+
+You can then in `github\workflows\main_logic-app-anomaly-detection-connector.yml` uncomment the `Login to Azure` and `Set environment variables` steps.
 
 ## Contributions
 
